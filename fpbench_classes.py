@@ -1,6 +1,6 @@
 class expr:
     def __repr__(self):
-        return str(type(self)) + '(' + repr(self.val) + ')'
+        return type(self).__name__ + '(' + repr(self.val) + ')'
     def __str__(self):
         return str(self.val)
     def infix(self):
@@ -24,7 +24,7 @@ class op(expr):
         self.args = args
         
     def __repr__(self):
-        return '{}({},{})'.format(type(self),self.op, ",".join(list(map(repr,self.args))))
+        return '{}({},{})'.format(type(self).__name__,self.op, ",".join(list(map(repr,self.args))))
     def __str__(self):
         return '({} {})'.format(self.op, " ".join(list(map(str, self.args))))
 
