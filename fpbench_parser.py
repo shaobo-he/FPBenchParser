@@ -129,7 +129,7 @@ def p_prop(p):
             | SYMBOL STRING
             | SYMBOL LPAREN symbols RPAREN'''
     if p[1][0] != ':' or len(p[1]) == 1:
-        print("Invalid proprty:", p[1])
+        print("Invalid property:", p[1])
         assert(0)
     p[1] = p[1][1:]
     if len(p) == 3:
