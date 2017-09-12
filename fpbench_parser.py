@@ -5,6 +5,15 @@ from fpbench_lexer import tokens
 from fpbench_classes import *
 
 # Artificially requires FPCore as a keyword.
+def p_programs(p):
+    '''programs : program
+                | programs program'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[1].append(p[2])
+        p[0] = p[1]
+        
 def p_program(p):
     '''program : LPAREN SYMBOL LPAREN symbols RPAREN props expr RPAREN
                | LPAREN SYMBOL LPAREN symbols RPAREN expr RPAREN'''
@@ -143,12 +152,13 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
-s = '''(FPCore (x y)
+if __name__ == '__main__':
+    s = '''(FPCore (x y)
  :name "NMSE example 3.1"
  :cite (hamming-1987)
  :pre (>= x 0)
  (fma x x (- (sqrt (+ x (- 1))) (sqrt x))))'''
-import pprint
-parsed = parser.parse(s)
-print(repr(parsed['prog']))
-print(parsed['prog'].infix())
+    import pprint
+    parsed = parser.parse(s)
+    print(repr(parsed['prog']))
+    print(parsed['prog'].infix())
