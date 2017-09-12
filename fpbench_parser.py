@@ -154,11 +154,11 @@ parser = yacc.yacc()
 
 if __name__ == '__main__':
     s = '''(FPCore (x y)
- :name "NMSE example 3.1"
- :cite (hamming-1987)
- :pre (>= x 0)
- (fma x x (- (sqrt (+ x (- 1))) (sqrt x))))'''
+             :name "NMSE example 3.1"
+             :cite (hamming-1987)
+             :pre (>= x 0)
+             (fma x x (- (sqrt (+ x (- 1))) (sqrt x))))'''
     import pprint
-    parsed = parser.parse(s)
+    parsed = parser.parse(s)[0]
     print(repr(parsed['prog']))
     print(parsed['prog'].infix())

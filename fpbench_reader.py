@@ -8,5 +8,6 @@ if __name__ == "__main__":
         print(parser.parse(user_str))
     else:
         for e in sys.argv[1:]:
+            print(e)
             with open(e, 'r') as f:
-                print(parser.parse(f))
+                print(parser.parse(f.read()))
