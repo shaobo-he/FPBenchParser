@@ -2,9 +2,9 @@ from ply import yacc
 
 from fpbench_lexer import lexer
 from fpbench_lexer import tokens
+from fpbench_lexer import ops
 from fpbench_classes import *
 
-# Artificially requires FPCore as a keyword.
 def p_programs(p):
     '''programs : program
                 | programs program'''
@@ -81,8 +81,8 @@ def p_let_expr(p):
     
 
 def p_while_expr(p):
-    '''while_expr : LPAREN WHILE LPAREN iter_assigns RPAREN expr RPAREN'''
-    p[0] = ("WHILE", p[4], p[6])
+    '''while_expr : LPAREN WHILE expr LPAREN iter_assigns RPAREN expr RPAREN'''
+    p[0] = ("WHILE", p[3], p[5], p[7])
 
 def p_exprs(p):
     '''exprs : expr
@@ -103,7 +103,8 @@ def p_assigns(p):
     
 
 def p_assign(p):
-    '''assign : LBRACK expr expr RBRACK'''
+    '''assign : LBRACK SYMBOL expr RBRACK
+              | LPAREN SYMBOL expr RPAREN'''
     p[0] = ((p[2],p[3]),)
     
 
@@ -117,7 +118,8 @@ def p_iter_assigns(p):
     
 
 def p_iter_assign(p):
-    '''iter_assign : LBRACK SYMBOL expr expr RBRACK'''
+    '''iter_assign : LBRACK SYMBOL expr expr RBRACK
+                   | LPAREN SYMBOL expr expr RPAREN'''
     p[0] = ((p[2],p[3],p[4]),)
     
 
@@ -133,7 +135,8 @@ def p_props(p):
 def p_prop(p):
     '''prop : SYMBOL expr
             | SYMBOL STRING
-            | SYMBOL LPAREN symbols RPAREN'''
+            | SYMBOL LPAREN symbols RPAREN
+            | SYMBOL LPAREN assigns RPAREN'''
     if p[1][0] != ':' or len(p[1]) == 1:
         print("Invalid property:", p[1])
         assert(0)
@@ -159,163 +162,14 @@ def p_error(p):
 parser = yacc.yacc()
 
 if __name__ == '__main__':
-    s = ''';; -*- mode: scheme -*-
+    s = '''(FPCore (x1 x2 x3)
+ :name "hartman3"
+ :precision binary64
+ :pre (and (<= 0 x1 1) (<= 0 x2 1) (<= 0 x3 1))
+   (let ([exp1 e1])
+     (- (+ (+ (+ (* 1.0 exp1) (* 1.2 exp21))
+              (* 3.0 exp3)) (* 3.2 exp4)))))'''
 
-;; These two appear in the text of the FPTaylor paper
-
-(FPCore (t)
-  :name "intro-example"
-  :cite (solovyev-et-al-2015)
-  :pre (<= 0 t 999)
-  (/ t (+ t 1)))
-
-(FPCore (x y)
-  :name "sec4-example"
-  :cite (solovyev-et-al-2015)
-  :precision binary64
-  :pre (and (<= 1.001 x 2) (<= 1.001 y 2))
-  (let ([t (* x y)])
-    (/ (- t 1) (- (* t t) 1))))
-
-;; From the FPTaylor project <https://github.com/soarlab/FPTaylor>,
-;; all `*.txt` files in the directory `benchmarks/tests/`.
-
-(FPCore (x0 x1 x2)
-  :name "test01_sum3"
-  :precision binary32
-  :pre (and (< 1 x0 2) (< 1 x1 2) (< 1 x2 2))
-  (let ([p0 (- (+ x0 x1) x2)]
-        [p1 (- (+ x1 x2) x0)]
-        [p2 (- (+ x2 x0) x1)])
-    (+ (+ p0 p1) p2)))
-
-(FPCore (x0 x1 x2 x3 x4 x5 x6 x7 x8)
-  :name "test02_sum8"
-  :precision binary64
-  :pre (and (< 1 x0 2) (< 1 x1 2) (< 1 x2 2)
-            (< 1 x3 2) (< 1 x4 2) (< 1 x5 2)
-            (< 1 x6 2) (< 1 x7 2))
-  (+ (+ (+ (+ (+ (+ (+ x0 x1) x2) x3) x4) x5) x6) x7))
-
-(FPCore (x y)
-  :name "test03_nonlin2"
-  :precision binary64
-  :pre (and (< 0 x 1) (< -1 y -0.1))
-  (/ (+ x y) (- x y)))
-
-(FPCore (m0 m1 m2 w0 w1 w2 a0 a1 a2)
-  :name "test04_dqmom9"
-  :precision binary64
-  :pre (and (< -1 m0 1) (< -1 m1 1) (< -1 m2 1)
-            (< 0.00001 w0 1) (< 0.00001 w1 1) (< 0.00001 w2 1)
-            (< 0.00001 a0 1) (< 0.00001 a1 1) (< 0.00001 a2 1))
-  (let ([v2 (* (* w2 (- 0 m2)) (* -3 (* (* 1 (/ a2 w2)) (/ a2 w2))))]
-        [v1 (* (* w1 (- 0 m1)) (* -3 (* (* 1 (/ a1 w1)) (/ a1 w1))))]
-        [v0 (* (* w0 (- 0 m0)) (* -3 (* (* 1 (/ a0 w0)) (/ a0 w0))))])
-    (+ 0.0 (+ (* v0 1) (+ (* v1 1) (+ (* v2 1) 0.0))))))
-
-(FPCore (x)
-  :name "test05_nonlin1, r4"
-  :precision binary64
-  :pre (< 1.00001 x 2)
-  (let ([r1 (- x 1)] [r2 (* x x)])
-    (/ r1 (- r2 1))))
-
-(FPCore (x)
-  :name "test05_nonlin1, test2"
-  :precision binary64
-  :pre (< 1.00001 x 2)
-  (/ 1 (+ x 1)))
-
-(FPCore (x0 x1 x2 x3)
-  :name "test06_sums4, sum1"
-  :precision binary32
-  :pre (and (< -1e-5 x0 1.00001) (< 0 x1 1) (< 0 x2 1) (< 0 x3 1))
-  (+ (+ (+ x0 x1) x2) x3))
-
-(FPCore (x0 x1 x2 x3)
-  :name "test06_sums4, sum2"
-  :precision binary32
-  :pre (and (< -1e-5 x0 1.00001) (< 0 x1 1) (< 0 x2 1) (< 0 x3 1))
-(+ (+ x0 x1) (+ x2 x3)));; -*- mode: scheme -*-
-
-;; These two appear in the text of the FPTaylor paper
-
-(FPCore (t)
-  :name "intro-example"
-  :cite (solovyev-et-al-2015)
-  :pre (<= 0 t 999)
-  (/ t (+ t 1)))
-
-(FPCore (x y)
-  :name "sec4-example"
-  :cite (solovyev-et-al-2015)
-  :precision binary64
-  :pre (and (<= 1.001 x 2) (<= 1.001 y 2))
-  (let ([t (* x y)])
-    (/ (- t 1) (- (* t t) 1))))
-
-;; From the FPTaylor project <https://github.com/soarlab/FPTaylor>,
-;; all `*.txt` files in the directory `benchmarks/tests/`.
-
-(FPCore (x0 x1 x2)
-  :name "test01_sum3"
-  :precision binary32
-  :pre (and (< 1 x0 2) (< 1 x1 2) (< 1 x2 2))
-  (let ([p0 (- (+ x0 x1) x2)]
-        [p1 (- (+ x1 x2) x0)]
-        [p2 (- (+ x2 x0) x1)])
-    (+ (+ p0 p1) p2)))
-
-(FPCore (x0 x1 x2 x3 x4 x5 x6 x7 x8)
-  :name "test02_sum8"
-  :precision binary64
-  :pre (and (< 1 x0 2) (< 1 x1 2) (< 1 x2 2)
-            (< 1 x3 2) (< 1 x4 2) (< 1 x5 2)
-            (< 1 x6 2) (< 1 x7 2))
-  (+ (+ (+ (+ (+ (+ (+ x0 x1) x2) x3) x4) x5) x6) x7))
-
-(FPCore (x y)
-  :name "test03_nonlin2"
-  :precision binary64
-  :pre (and (< 0 x 1) (< -1 y -0.1))
-  (/ (+ x y) (- x y)))
-
-(FPCore (m0 m1 m2 w0 w1 w2 a0 a1 a2)
-  :name "test04_dqmom9"
-  :precision binary64
-  :pre (and (< -1 m0 1) (< -1 m1 1) (< -1 m2 1)
-            (< 0.00001 w0 1) (< 0.00001 w1 1) (< 0.00001 w2 1)
-            (< 0.00001 a0 1) (< 0.00001 a1 1) (< 0.00001 a2 1))
-  (let ([v2 (* (* w2 (- 0 m2)) (* -3 (* (* 1 (/ a2 w2)) (/ a2 w2))))]
-        [v1 (* (* w1 (- 0 m1)) (* -3 (* (* 1 (/ a1 w1)) (/ a1 w1))))]
-        [v0 (* (* w0 (- 0 m0)) (* -3 (* (* 1 (/ a0 w0)) (/ a0 w0))))])
-    (+ 0.0 (+ (* v0 1) (+ (* v1 1) (+ (* v2 1) 0.0))))))
-
-(FPCore (x)
-  :name "test05_nonlin1, r4"
-  :precision binary64
-  :pre (< 1.00001 x 2)
-  (let ([r1 (- x 1)] [r2 (* x x)])
-    (/ r1 (- r2 1))))
-
-(FPCore (x)
-  :name "test05_nonlin1, test2"
-  :precision binary64
-  :pre (< 1.00001 x 2)
-  (/ 1 (+ x 1)))
-
-(FPCore (x0 x1 x2 x3)
-  :name "test06_sums4, sum1"
-  :precision binary32
-  :pre (and (< -1e-5 x0 1.00001) (< 0 x1 1) (< 0 x2 1) (< 0 x3 1))
-  (+ (+ (+ x0 x1) x2) x3))
-
-(FPCore (x0 x1 x2 x3)
-  :name "test06_sums4, sum2"
-  :precision binary32
-  :pre (and (< -1e-5 x0 1.00001) (< 0 x1 1) (< 0 x2 1) (< 0 x3 1))
-(+ (+ x0 x1) (+ x2 x3)))'''
     import pprint
     for p in parser.parse(s):
         parsed = p
