@@ -162,13 +162,13 @@ def p_error(p):
 parser = yacc.yacc()
 
 if __name__ == '__main__':
-    s = '''(FPCore (x1 x2 x3)
- :name "hartman3"
- :precision binary64
- :pre (and (<= 0 x1 1) (<= 0 x2 1) (<= 0 x3 1))
-   (let ([exp1 e1])
-     (- (+ (+ (+ (* 1.0 exp1) (* 1.2 exp21))
-              (* 3.0 exp3)) (* 3.2 exp4)))))'''
+    s = ('(FPCore (x1 x2 x3)\n' +
+         ' :name "hartman3"\n' +
+         ' :precision binary64\n' +
+         ' :pre (and (<= 0 x1 1) (<= 0 x2 1) (<= 0 x3 1))\n' +
+         '   (let ([exp1 e1])\n' +
+         '     (- (+ (+ (+ (* 1.0 exp1) (* 1.2 exp21))\n' +
+         '              (* 3.0 exp3)) (* 3.2 exp4)))))\n')
 
     import pprint
     for p in parser.parse(s):
