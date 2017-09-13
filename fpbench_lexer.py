@@ -32,7 +32,7 @@ keywords = {
     'while' : 'WHILE'
 }
 
-__num_re = re.compile(r'[-+]?[0-9]+(((\.)?|(\.[0-9]+)?)(e[-+]?[0-9]+)?)?')
+__num_re = re.compile(r'(?:[-+]?[0-9]+(((\.)?|(\.[0-9]+)?)(e[-+]?[0-9]+)?)?\Z)')
 
 __nums = {str(i) for i in range(10)}
 
@@ -50,7 +50,7 @@ def t_SYMBOL(t):
     elif t.value in keywords.keys():
         t.type = keywords[t.value]
     # Actually a number
-    elif __num_re.fullmatch(t.value):
+    elif __num_re.match(t.value):
         try:
             float(t.value)
         except:
