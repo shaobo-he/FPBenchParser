@@ -20,8 +20,9 @@ ops = ["+","-","*","/","fabs","fma","exp","exp2","expm1","log","log10","log2",
        "log1p","pow","sqrt","cbrt","hypot","sin","cos","tan","asin","acos",
        "atan","atan2","sinh","cosh","tanh","asinh","acosh","atanh","erf","erfc",
        "tgamma","lgamma","ceil","floor","fmod","remainder","fmax","fmin","fdim",
-       "copysign","trunc","round","nearbyint","<=",">=","==","!=","<",">","and",
-       "or","not","isfinite","isinf","isnan","isnormal","signbit"]
+       "copysign","trunc","round","nearbyint","=>","<=",">=","==","!=","<",">",
+       "and","or","not","isfinite","isinf","isnan","isnormal","signbit"]
+
 consts = ["E","LOG2E","LOG10E","LN2","LN10","PI","PI_2","PI_4","1_PI","2_PI",
           "2_SQRTPI","SQRT2","SQRT1_2","INFINITY","NAN","TRUE","FALSE"]
 
@@ -31,12 +32,13 @@ keywords = {
     'while' : 'WHILE'
 }
 
-__num_re = re.compile(r'[\-\+]?[0-9]+(\.[0-9]+(e[\-\+]?[0-9]+)?)?')
+__num_re = re.compile(r'[-+]?[0-9]+(((\.)?|(\.[0-9]+)?)(e[-+]?[0-9]+)?)?')
 
 __nums = {str(i) for i in range(10)}
 
 def t_COMMENT(t):
     r';.*\n'
+    t.lexer.lineno += 1
     pass
 
 def t_SYMBOL(t):
@@ -49,6 +51,11 @@ def t_SYMBOL(t):
         t.type = keywords[t.value]
     # Actually a number
     elif __num_re.fullmatch(t.value):
+        try:
+            float(t.value)
+        except:
+            print("Floating point expression is wrong")
+            assert(0)
         t.type = "NUMBER"
     # Tentatively a symbol
     else:
@@ -57,13 +64,17 @@ def t_SYMBOL(t):
             assert(0)
     return t
 
-t_ignore = ' \t\r\n\f\v'
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
+t_ignore = ' \t\r\f\v'
 
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACK = r'\['
 t_RBRACK = r'\]'
-t_STRING = r'"([\x20-\x5b\x5d-\x7e]|\\["\\])+?"'
+t_STRING = r'"([\x20-\x5b\x5d-\x7e]|\\["\\n])+?"'
 
 # Error handling rule
 def t_error(t):
