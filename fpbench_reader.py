@@ -10,4 +10,4 @@ if __name__ == "__main__":
         for e in sys.argv[1:]:
             print(e)
             with open(e, 'r') as f:
-                print(parser.parse(f.read()))
+                print(parser.parse(f.read(),tracking=True))

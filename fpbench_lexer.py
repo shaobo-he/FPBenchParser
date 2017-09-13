@@ -28,11 +28,11 @@ def t_IF(t):
     return t
 
 def t_LET(t):
-    r'if'
+    r'let'
     return t
 
 def t_WHILE(t):
-    r'if'
+    r'while'
     return t
 
 def t_COMMENT(t):
@@ -61,11 +61,10 @@ if __name__ == '__main__':
     
     lex.lex()
 
-    lex.input('''(FPCore (x)
- :name "NMSE example 3.1"
- ; this is a comment.... lalalala;;;;
- :cite (hamming-1987)
- :pre (>= x 0)
- (- (sqrt (+ x E)) (sqrt x)))''')
+    lex.input('''(FPCore (t)
+  :name "intro-example"
+  :cite (solovyev-et-al-2015)
+  :pre (<= 0 t 999)
+(/ t (+ t 1)))''')
     for tok in iter(lex.token, None):
         print(repr(tok.type), repr(tok.value))

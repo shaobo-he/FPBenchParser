@@ -39,3 +39,16 @@ class op(expr):
             return "{}({})".format(self.op, ','.join(list(map(lambda x: x.infix(),
                                                               self.args))))
             
+class let(expr):
+    def __init__(self, bindings, expr):
+        self.bindings = bindings
+        self.expr = expr
+    def __str__(self):
+        # Make this better
+        return '(let {} in {})'.format(str(self.bindings), str(self.expr))
+    def __repr__(self):
+        # Make this better
+        return str(self)
+    def infix(self):
+        return '{}{}'.format("".join(list(map(lambda x: "{}={};\n".format(x[0],x[1].infix()), self.bindings))),
+                               self.expr.infix())                              

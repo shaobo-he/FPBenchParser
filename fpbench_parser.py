@@ -70,8 +70,8 @@ def p_if_expr(p):
     
 
 def p_let_expr(p):
-    '''let_expr : LPAREN LET RPAREN assigns LPAREN expr RPAREN'''
-    p[0] = ("LET", p[4], p[6])
+    '''let_expr : LPAREN LET LPAREN assigns RPAREN expr RPAREN'''
+    p[0] = let(p[4], p[6])
     
 
 def p_while_expr(p):
@@ -147,17 +147,19 @@ def p_symbols(p):
         p[0] = p[1] + (p[2],)
     
 def p_error(p):
-    print("Parsing failed")
+    print("Parsing failed", p)
         
 # Build the parser
 parser = yacc.yacc()
 
 if __name__ == '__main__':
     s = '''(FPCore (x y)
-             :name "NMSE example 3.1"
-             :cite (hamming-1987)
-             :pre (>= x 0)
-             (fma x x (- (sqrt (+ x (- 1))) (sqrt x))))'''
+  :name "sec4-example"
+  :cite (solovyev-et-al-2015)
+  :precision binary64
+  :pre (and (<= 1.001 x 2) (<= 1.001 y 2))
+  (let ([t (* x y)])
+(/ (- t 1) (- (* t t) 1))))'''
     import pprint
     parsed = parser.parse(s)[0]
     print(repr(parsed['prog']))
