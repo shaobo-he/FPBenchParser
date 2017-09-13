@@ -1,4 +1,5 @@
 from ply import lex
+import re
 
 tokens = (
     "LPAREN",
@@ -15,29 +16,46 @@ tokens = (
     "OPERATION"
 )
 
-def t_OPERATION(t):
-    r'\+|\-|\*|/|fabs|fma|exp|exp2|expm1|log|log10|log2|log1p|pow|sqrt|cbrt|hypot|sin|cos|tan|asin|acos|atan|atan2|sinh|cosh|tanh|asinh|acosh|atanh|erf|erfc|tgamma|lgamma|ceil|floor|fmod|remainder|fmax|fmin|fdim|copysign|trunc|round|nearbyint|<=|>=|==|!=|<|>|and|or|not|isfinite|isinf|isnan|isnormal|signbit'
-    return t
+ops = ["+","-","*","/","fabs","fma","exp","exp2","expm1","log","log10","log2",
+       "log1p","pow","sqrt","cbrt","hypot","sin","cos","tan","asin","acos",
+       "atan","atan2","sinh","cosh","tanh","asinh","acosh","atanh","erf","erfc",
+       "tgamma","lgamma","ceil","floor","fmod","remainder","fmax","fmin","fdim",
+       "copysign","trunc","round","nearbyint","<=",">=","==","!=","<",">","and",
+       "or","not","isfinite","isinf","isnan","isnormal","signbit"]
+consts = ["E","LOG2E","LOG10E","LN2","LN10","PI","PI_2","PI_4","1_PI","2_PI",
+          "2_SQRTPI","SQRT2","SQRT1_2","INFINITY","NAN","TRUE","FALSE"]
 
-def t_CONSTANT(t):
-    r'E|LOG2E|LOG10E|LN2|LN10|PI|PI_2|PI_4|1_PI|2_PI|2_SQRTPI|SQRT2|SQRT1_2|INFINITY|NAN|TRUE|FALSE'
-    return t
+keywords = {
+    'if' : 'IF',
+    'let' : 'LET',
+    'while' : 'WHILE'
+}
 
-def t_IF(t):
-    r'if'
-    return t
+__num_re = re.compile(r'[\-\+]?[0-9]+(\.[0-9]+(e[\-\+]?[0-9]+)?)?')
 
-def t_LET(t):
-    r'let'
-    return t
-
-def t_WHILE(t):
-    r'while'
-    return t
+__nums = {str(i) for i in range(10)}
 
 def t_COMMENT(t):
     r';.*\n'
     pass
+
+def t_SYMBOL(t):
+    r'[a-zA-Z0-9~!@$%^&*_\-\+=<>\.\?/:][a-zA-Z0-9~!@$%^&*_\-+=<>\.\?/:]*'
+    if t.value in ops:
+        t.type = "OPERATION"
+    elif t.value in consts:
+        t.type = "CONSTANT"
+    elif t.value in keywords.keys():
+        t.type = keywords[t.value]
+    # Actually a number
+    elif __num_re.fullmatch(t.value):
+        t.type = "NUMBER"
+    # Tentatively a symbol
+    else:
+        if str(t.value)[0] in __nums:
+            print("Symbol starts with number:", t.value)
+            assert(0)
+    return t
 
 t_ignore = ' \t\r\n\f\v'
 
@@ -45,8 +63,6 @@ t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACK = r'\['
 t_RBRACK = r'\]'
-t_NUMBER = r'[-+]?[0-9]+(\.[0-9]+(e[-+]?[0-9]+)?)?'
-t_SYMBOL = r'[a-zA-Z~!@$%^&*_\-+=<>.?/:][a-zA-Z0-9~!@$%^&*_\-+=<>.?/:]*'
 t_STRING = r'"([\x20-\x5b\x5d-\x7e]|\\["\\])+?"'
 
 # Error handling rule
