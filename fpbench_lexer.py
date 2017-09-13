@@ -88,10 +88,10 @@ if __name__ == '__main__':
     
     lex.lex()
 
-    lex.input('''(FPCore (t)
-  :name "intro-example"
-  :cite (solovyev-et-al-2015)
-  :pre (<= 0 t 999)
-(/ t (+ t 1)))''')
+    lex.input('(FPCore (t)\n' +
+              '  :name "intro-example"' +
+              '  :cite (solovyev-et-al-2015)' +
+              '  :pre (<= 0 t 999)'+
+              '  (/ t (+ t 1)))')
     for tok in iter(lex.token, None):
         print(repr(tok.type), repr(tok.value))
