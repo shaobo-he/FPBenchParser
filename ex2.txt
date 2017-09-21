@@ -1,0 +1,9 @@
+;(FPCore (x y) (+ (* x (+ (* x 0.25) (* y 0.5))) (* 0.25 (* y y))))
+;(FPCore (x y) (* x (+ (* x 0.25) (* y 0.5))) )
+;(FPCore (x) (/ 2.0 x))
+(FPCore (x y) (* (+ x y) (- x y)))
+;(FPCore (x y) (- x y))
+; (FPCore (a c b)
+;  :name "a*c + b*c"
+;  (+ (* a c) (* b c)))
+

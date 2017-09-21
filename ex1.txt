@@ -1,0 +1,9 @@
+;(FPCore (x y)
+;  :name "((x+y)/2.0)*((x+y)/2.0)"
+;  (* (/ (+ x y) 2.0) (/ (+ x y) 2.0)))
+;(FPCore (x)
+;  :name "(2.0 / ( x * ((x* x) - 1.0)))"
+;  (/ 2.0 (* x (- (* x x) 1.0))))
+(FPCore (x y) (- (* x x) (* y y)))
+;(FPCore (x y) (+ x (- 0.0 y)))
+;(FPCore (a c b) (* (+ a b) c))
